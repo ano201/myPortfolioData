@@ -12,41 +12,42 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(fileUpload());
 
-const { MongoClient } = require('mongodb');
+const { MongoClient } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.jpgnt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+const client = new MongoClient(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 async function run() {
-    try {
-        await client.connect();
-        console.log("My project's Database Connected");
-        const database = client.db("My_Projects");
-        const projectsCollection = database.collection("Projects");
+  try {
+    await client.connect();
+    console.log("My project's Database Connected");
+    const database = client.db("My_Projects");
+    const projectsCollection = database.collection("Projects");
 
-        app.get('/projects', async (req, res) => {
-            const cursor = projectsCollection.find({});
-            const allProjects = await cursor.toArray();
-            res.json(allProjects);
-        })
+    app.get("/projects", async (req, res) => {
+      const cursor = projectsCollection.find({});
+      const allProjects = await cursor.toArray();
+      res.json(allProjects);
+    });
 
-
-        app.post('/projects', async (req, res) => {
-			const file = req.files.file;
-			const name = req.body.name;
-			const email = req.body.email;
-			const role = req.body.role;
-			const newImg = file.data;
-			const encImg = newImg.toString("base64");
-			const image = { contentType: file.mimetype, size: file.size, img: Buffer.from(encImg, "base64"), };
-            //const result = await projectsCollection.insertOne(postProject);
-            //res.json(result);
-			console.log(image)
-        })
-
-    }
-    finally {
-        // await clint.close();
-    }
+    app.post("/projects", async (req, res) => {
+      const data = req.body;
+      const file = req.files.file;
+      const newImg = file.data;
+      const encImg = newImg.toString("base64");
+      const image = {
+        contentType: file.mimetype,
+        size: file.size,
+        img: Buffer.from(encImg, "base64"),
+      };
+      const result = await projectsCollection.insertOne({ data, image });
+      res.json(result);
+    });
+  } finally {
+    // await clint.close();
+  }
 }
 
 run().catch(console.dir);
