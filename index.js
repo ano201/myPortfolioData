@@ -2,11 +2,15 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
+const fileUpload = require("express-fileupload");
+const bodyParser = require("body-parser");
 const port = process.env.PORT || 5000;
 const ObjectId = require("mongodb").ObjectId;
 
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json());
+app.use(fileUpload());
 
 const { MongoClient } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.jpgnt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -27,9 +31,16 @@ async function run() {
 
 
         app.post('/projects', async (req, res) => {
-            const postProject = req.body;
-            const result = await projectsCollection.insertOne(postProject);
-            res.json(result);
+			const file = req.files.file;
+			const name = req.body.name;
+			const email = req.body.email;
+			const role = req.body.role;
+			const newImg = file.data;
+			const encImg = newImg.toString("base64");
+			const image = { contentType: file.mimetype, size: file.size, img: Buffer.from(encImg, "base64"), };
+            //const result = await projectsCollection.insertOne(postProject);
+            //res.json(result);
+			console.log(image)
         })
 
     }
