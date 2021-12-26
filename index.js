@@ -45,6 +45,13 @@ async function run() {
       const result = await projectsCollection.insertOne({ data, image });
       res.json(result);
     });
+
+    app.delete("/projects/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await projectsCollection.deleteOne(query);
+      res.json(result);
+    });
   } finally {
     // await clint.close();
   }
